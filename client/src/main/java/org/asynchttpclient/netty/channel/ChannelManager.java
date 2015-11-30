@@ -398,8 +398,10 @@ public class ChannelManager {
     }
 
     public void upgradeProtocol(ChannelPipeline pipeline, Uri requestUri) throws SSLException {
-        if (pipeline.get(HTTP_CLIENT_CODEC) != null)
-            pipeline.remove(HTTP_CLIENT_CODEC);
+        if (pipeline.get("HttpClientCodec$Decoder#0") != null) {
+            pipeline.remove("HttpClientCodec$Decoder#0");
+            pipeline.remove("HttpClientCodec$Encoder#0");
+        }
 
         if (requestUri.isSecured())
             if (isSslHandlerConfigured(pipeline)) {
@@ -447,8 +449,13 @@ public class ChannelManager {
     }
 
     public void upgradePipelineForWebSockets(ChannelPipeline pipeline) {
-        pipeline.addAfter(HTTP_CLIENT_CODEC, WS_ENCODER_HANDLER, new WebSocket08FrameEncoder(true));
-        pipeline.remove(HTTP_CLIENT_CODEC);
+
+//        HttpClientCodec$Decoder#0
+//        HttpClientCodec$Encoder#0
+        
+        pipeline.addAfter("HttpClientCodec$Encoder#0", WS_ENCODER_HANDLER, new WebSocket08FrameEncoder(true));
+        pipeline.remove("HttpClientCodec$Decoder#0");
+        pipeline.remove("HttpClientCodec$Encoder#0");
         pipeline.addBefore(AHC_WS_HANDLER, WS_DECODER_HANDLER, new WebSocket08FrameDecoder(false, false, config.getWebSocketMaxFrameSize()));
         pipeline.addAfter(WS_DECODER_HANDLER, WS_FRAME_AGGREGATOR, new WebSocketFrameAggregator(config.getWebSocketMaxBufferSize()));
     }
