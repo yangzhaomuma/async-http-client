@@ -23,6 +23,8 @@ import static org.asynchttpclient.util.DateUtils.millisTime;
 import static org.testng.Assert.*;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpHeaders;
 
 import java.io.ByteArrayInputStream;
@@ -50,6 +52,7 @@ import org.asynchttpclient.handler.MaxRedirectException;
 import org.asynchttpclient.request.body.multipart.Part;
 import org.asynchttpclient.request.body.multipart.StringPart;
 import org.asynchttpclient.test.EventCollectingHandler;
+import org.asynchttpclient.util.MiscUtils;
 import org.testng.annotations.Test;
 
 public class BasicHttpTest extends AbstractBasicTest {
@@ -68,7 +71,6 @@ public class BasicHttpTest extends AbstractBasicTest {
 
                 @Override
                 public void onThrowable(Throwable t) {
-                    t.printStackTrace();
                     fail("Unexpected exception: " + t.getMessage(), t);
                 }
 
@@ -90,7 +92,6 @@ public class BasicHttpTest extends AbstractBasicTest {
 
                 @Override
                 public void onThrowable(Throwable t) {
-                    t.printStackTrace();
                     fail("Unexpected exception: " + t.getMessage(), t);
                 }
 
@@ -112,7 +113,6 @@ public class BasicHttpTest extends AbstractBasicTest {
 
                 @Override
                 public void onThrowable(Throwable t) {
-                    t.printStackTrace();
                     fail("Unexpected exception: " + t.getMessage(), t);
                 }
 
@@ -253,7 +253,7 @@ public class BasicHttpTest extends AbstractBasicTest {
         try (AsyncHttpClient client = asyncHttpClient()) {
             final CountDownLatch l = new CountDownLatch(1);
             HttpHeaders h = new DefaultHttpHeaders();
-            h.add(HttpHeaders.Names.CONTENT_TYPE, HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED);
+            h.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED);
 
             Map<String, List<String>> m = new HashMap<>();
             for (int i = 0; i < 5; i++) {
@@ -453,7 +453,7 @@ public class BasicHttpTest extends AbstractBasicTest {
                     try {
                         assertEquals(response.getStatusCode(), 200);
                         HttpHeaders h = response.getHeaders();
-                        assertEquals(h.get("X-Content-Type"), HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED);
+                        assertTrue(HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.contentEqualsIgnoreCase(h.get("X-Content-Type")));
                     } finally {
                         l.countDown();
                     }
@@ -480,7 +480,7 @@ public class BasicHttpTest extends AbstractBasicTest {
         try (AsyncHttpClient client = asyncHttpClient()) {
             final CountDownLatch l = new CountDownLatch(1);
             HttpHeaders h = new DefaultHttpHeaders();
-            h.add(HttpHeaders.Names.CONTENT_TYPE, HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED);
+            h.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED);
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < 5; i++) {
                 sb.append("param_").append(i).append("=value_").append(i).append("&");
@@ -494,7 +494,6 @@ public class BasicHttpTest extends AbstractBasicTest {
                     try {
                         assertEquals(response.getStatusCode(), 200);
                         for (int i = 1; i < 5; i++) {
-                            System.out.println(">>>>> " + response.getHeader("X-param_" + i));
                             assertEquals(response.getHeader("X-param_" + i), "value_" + i);
 
                         }
@@ -516,7 +515,7 @@ public class BasicHttpTest extends AbstractBasicTest {
         try (AsyncHttpClient client = asyncHttpClient()) {
             final CountDownLatch l = new CountDownLatch(1);
             HttpHeaders h = new DefaultHttpHeaders();
-            h.add(HttpHeaders.Names.CONTENT_TYPE, HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED);
+            h.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED);
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < 5; i++) {
                 sb.append("param_").append(i).append("=value_").append(i).append("&");
@@ -531,7 +530,7 @@ public class BasicHttpTest extends AbstractBasicTest {
                     try {
                         assertEquals(response.getStatusCode(), 200);
                         for (int i = 1; i < 5; i++) {
-                            System.out.println(">>>>> " + response.getHeader("X-param_" + i));
+                            logger.debug(">>>>> " + response.getHeader("X-param_" + i));
                             assertEquals(response.getHeader("X-param_" + i), "value_" + i);
 
                         }
@@ -552,7 +551,7 @@ public class BasicHttpTest extends AbstractBasicTest {
         try (AsyncHttpClient client = asyncHttpClient()) {
             final CountDownLatch l = new CountDownLatch(1);
             HttpHeaders h = new DefaultHttpHeaders();
-            h.add(HttpHeaders.Names.CONTENT_TYPE, HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED);
+            h.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED);
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < 5; i++) {
                 sb.append("param_").append(i).append("=value_").append(i).append("&");
@@ -614,7 +613,7 @@ public class BasicHttpTest extends AbstractBasicTest {
         try (AsyncHttpClient client = asyncHttpClient(config().setCompressionEnforced(true))) {
             final CountDownLatch l = new CountDownLatch(1);
             HttpHeaders h = new DefaultHttpHeaders();
-            h.add(HttpHeaders.Names.CONTENT_TYPE, HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED);
+            h.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED);
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < 5; i++) {
                 sb.append("param_").append(i).append("=value_").append(i).append("&");
@@ -645,7 +644,7 @@ public class BasicHttpTest extends AbstractBasicTest {
     public void asyncDoPostProxyTest() throws Exception {
         try (AsyncHttpClient client = asyncHttpClient(config().setProxyServer(proxyServer("localhost", port2).build()))) {
             HttpHeaders h = new DefaultHttpHeaders();
-            h.add(HttpHeaders.Names.CONTENT_TYPE, HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED);
+            h.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED);
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < 5; i++) {
                 sb.append("param_").append(i).append("=value_").append(i).append("&");
@@ -664,7 +663,7 @@ public class BasicHttpTest extends AbstractBasicTest {
             }).get();
 
             assertEquals(response.getStatusCode(), 200);
-            assertEquals(response.getHeader("X-" + HttpHeaders.Names.CONTENT_TYPE), HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED);
+            assertTrue(HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.contentEqualsIgnoreCase(response.getHeader("X-" + HttpHeaderNames.CONTENT_TYPE)));
         }
     }
 
@@ -672,7 +671,7 @@ public class BasicHttpTest extends AbstractBasicTest {
     public void asyncRequestVirtualServerPOSTTest() throws Exception {
         try (AsyncHttpClient client = asyncHttpClient()) {
             HttpHeaders h = new DefaultHttpHeaders();
-            h.add(HttpHeaders.Names.CONTENT_TYPE, HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED);
+            h.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED);
 
             Map<String, List<String>> m = new HashMap<>();
             for (int i = 0; i < 5; i++) {
@@ -683,11 +682,7 @@ public class BasicHttpTest extends AbstractBasicTest {
             Response response = client.executeRequest(request, new AsyncCompletionHandlerAdapter()).get();
 
             assertEquals(response.getStatusCode(), 200);
-            if (response.getHeader("X-Host").startsWith("localhost")) {
-                assertEquals(response.getHeader("X-Host"), "localhost:" + port1);
-            } else {
-                assertEquals(response.getHeader("X-Host"), "localhost:" + port1);
-            }
+            assertEquals(response.getHeader("X-Host"), "localhost:" + port1);
         }
     }
 
@@ -695,7 +690,7 @@ public class BasicHttpTest extends AbstractBasicTest {
     public void asyncDoPutTest() throws Exception {
         try (AsyncHttpClient client = asyncHttpClient()) {
             HttpHeaders h = new DefaultHttpHeaders();
-            h.add(HttpHeaders.Names.CONTENT_TYPE, HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED);
+            h.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED);
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < 5; i++) {
                 sb.append("param_").append(i).append("=value_").append(i).append("&");
@@ -713,7 +708,7 @@ public class BasicHttpTest extends AbstractBasicTest {
         try (AsyncHttpClient c = asyncHttpClient()) {
             final CountDownLatch l = new CountDownLatch(1);
             HttpHeaders h = new DefaultHttpHeaders();
-            h.add(HttpHeaders.Names.CONTENT_TYPE, HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED);
+            h.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED);
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < 5; i++) {
                 sb.append("param_").append(i).append("=value_").append(i).append("&");
@@ -746,7 +741,7 @@ public class BasicHttpTest extends AbstractBasicTest {
     public void asyncDoPostDelayCancelTest() throws Exception {
         try (AsyncHttpClient client = asyncHttpClient()) {
             HttpHeaders h = new DefaultHttpHeaders();
-            h.add(HttpHeaders.Names.CONTENT_TYPE, HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED);
+            h.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED);
             h.add("LockThread", "true");
             StringBuilder sb = new StringBuilder();
             sb.append("LockThread=true");
@@ -761,11 +756,11 @@ public class BasicHttpTest extends AbstractBasicTest {
         }
     }
 
-    @Test(groups = "standalone")
-    public void asyncDoPostDelayBytesTest() throws Exception {
+    @Test(groups = "standalone", expectedExceptions = TimeoutException.class)
+    public void asyncDoPostDelayBytesTest() throws Throwable {
         try (AsyncHttpClient client = asyncHttpClient()) {
             HttpHeaders h = new DefaultHttpHeaders();
-            h.add(HttpHeaders.Names.CONTENT_TYPE, HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED);
+            h.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED);
             h.add("LockThread", "true");
             StringBuilder sb = new StringBuilder();
             sb.append("LockThread=true");
@@ -774,19 +769,13 @@ public class BasicHttpTest extends AbstractBasicTest {
                 Future<Response> future = client.preparePost(getTargetUrl()).setHeaders(h).setBody(sb.toString()).execute(new AsyncCompletionHandlerAdapter() {
                     @Override
                     public void onThrowable(Throwable t) {
-                        t.printStackTrace();
+                        logger.debug("Exception", t);
                     }
                 });
 
                 future.get(10, TimeUnit.SECONDS);
             } catch (ExecutionException ex) {
-                if (ex.getCause() instanceof TimeoutException) {
-                    assertTrue(true);
-                }
-            } catch (TimeoutException te) {
-                assertTrue(true);
-            } catch (IllegalStateException ex) {
-                assertTrue(false);
+                throw ex.getCause();
             }
         }
     }
@@ -795,7 +784,7 @@ public class BasicHttpTest extends AbstractBasicTest {
     public void asyncDoPostNullBytesTest() throws Exception {
         try (AsyncHttpClient client = asyncHttpClient()) {
             HttpHeaders h = new DefaultHttpHeaders();
-            h.add(HttpHeaders.Names.CONTENT_TYPE, HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED);
+            h.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED);
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < 5; i++) {
                 sb.append("param_").append(i).append("=value_").append(i).append("&");
@@ -814,7 +803,7 @@ public class BasicHttpTest extends AbstractBasicTest {
     public void asyncDoPostListenerBytesTest() throws Exception {
         try (AsyncHttpClient client = asyncHttpClient()) {
             HttpHeaders h = new DefaultHttpHeaders();
-            h.add(HttpHeaders.Names.CONTENT_TYPE, HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED);
+            h.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED);
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < 5; i++) {
                 sb.append("param_").append(i).append("=value_").append(i).append("&");
@@ -866,43 +855,21 @@ public class BasicHttpTest extends AbstractBasicTest {
         }
     }
 
-    @Test(groups = "standalone")
-    public void asyncConnectInvalidPortFuture() throws Exception {
-        try (AsyncHttpClient client = asyncHttpClient()) {
-            int dummyPort = findFreePort();
-            try {
-                Response response = client.preparePost(String.format("http://localhost:%d/", dummyPort)).execute(new AsyncCompletionHandlerAdapter() {
-                    @Override
-                    public void onThrowable(Throwable t) {
-                        t.printStackTrace();
-                    }
-                }).get();
-                assertNull(response, "Should have thrown ExecutionException");
-            } catch (ExecutionException ex) {
-                Throwable cause = ex.getCause();
-                if (!(cause instanceof ConnectException)) {
-                    fail("Should have been caused by ConnectException, not by " + cause.getClass().getName());
-                }
-            }
-        }
-    }
-
-    @Test(groups = "standalone")
-    public void asyncConnectInvalidPort() throws Exception {
+    @Test(groups = "standalone", expectedExceptions = ConnectException.class)
+    public void asyncConnectInvalidPort() throws Throwable {
         try (AsyncHttpClient client = asyncHttpClient()) {
             // pick a random unused local port
             int port = findFreePort();
 
             try {
-                Response response = client.preparePost(String.format("http://localhost:%d/", port)).execute(new AsyncCompletionHandlerAdapter() {
+                client.preparePost(String.format("http://localhost:%d/", port)).execute(new AsyncCompletionHandlerAdapter() {
                     @Override
                     public void onThrowable(Throwable t) {
-                        t.printStackTrace();
+                        logger.debug("Exception", t);
                     }
                 }).get();
-                assertNull(response, "No ExecutionException was thrown");
             } catch (ExecutionException ex) {
-                assertEquals(ex.getCause().getClass(), ConnectException.class);
+                throw ex.getCause();
             }
         }
     }
@@ -1193,7 +1160,7 @@ public class BasicHttpTest extends AbstractBasicTest {
 
                 @Override
                 public void onThrowable(Throwable t) {
-                    t.printStackTrace();
+                    logger.debug("Exception", t);
                     try {
                         assertEquals(t.getClass(), MaxRedirectException.class);
                     } finally {
@@ -1228,7 +1195,7 @@ public class BasicHttpTest extends AbstractBasicTest {
                 public Response onCompleted(Response response) throws Exception {
                     try {
                         if (nestedCount.getAndIncrement() < MAX_NESTED) {
-                            System.out.println("Executing a nested request: " + nestedCount);
+                            logger.debug("Executing a nested request: " + nestedCount);
                             client.prepareGet("http://www.lemonde.fr").execute(this);
                         }
                     } finally {
@@ -1239,7 +1206,7 @@ public class BasicHttpTest extends AbstractBasicTest {
 
                 @Override
                 public void onThrowable(Throwable t) {
-                    t.printStackTrace();
+                    logger.debug("Exception", t);
                 }
             };
 
@@ -1271,7 +1238,6 @@ public class BasicHttpTest extends AbstractBasicTest {
     public void optionsTest() throws Exception {
         try (AsyncHttpClient client = asyncHttpClient()) {
             Response response = client.prepareOptions(getTargetUrl()).execute().get();
-
             assertEquals(response.getStatusCode(), 200);
             assertEquals(response.getHeader("Allow"), "GET,HEAD,POST,OPTIONS,TRACE");
         }
@@ -1281,11 +1247,8 @@ public class BasicHttpTest extends AbstractBasicTest {
     public void testAwsS3() throws Exception {
         try (AsyncHttpClient client = asyncHttpClient()) {
             Response response = client.prepareGet("http://test.s3.amazonaws.com/").execute().get();
-            if (response.getResponseBody() == null || response.getResponseBody().equals("")) {
-                fail("No response Body");
-            } else {
-                assertEquals(response.getStatusCode(), 403);
-            }
+            assertEquals(response.getStatusCode(), 403);
+            assertTrue(MiscUtils.isNonEmpty(response.getResponseBody()));
         }
     }
 
@@ -1293,30 +1256,26 @@ public class BasicHttpTest extends AbstractBasicTest {
     public void testAsyncHttpProviderConfig() throws Exception {
         try (AsyncHttpClient client = asyncHttpClient(config().addChannelOption(ChannelOption.TCP_NODELAY, Boolean.TRUE))) {
             Response response = client.prepareGet("http://test.s3.amazonaws.com/").execute().get();
-            if (response.getResponseBody() == null || response.getResponseBody().equals("")) {
-                fail("No response Body");
-            } else {
-                assertEquals(response.getStatusCode(), 403);
-            }
+            assertEquals(response.getStatusCode(), 403);
+            assertTrue(MiscUtils.isNonEmpty(response.getResponseBody()));
         }
     }
 
-    @Test(groups = "standalone")
-    public void idleRequestTimeoutTest() throws Exception {
+    @Test(groups = "standalone", expectedExceptions = TimeoutException.class)
+    public void idleRequestTimeoutTest() throws Throwable {
         try (AsyncHttpClient client = asyncHttpClient(config().setPooledConnectionIdleTimeout(5000).setRequestTimeout(10000))) {
             HttpHeaders h = new DefaultHttpHeaders();
-            h.add(HttpHeaders.Names.CONTENT_TYPE, HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED);
+            h.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED);
             h.add("LockThread", "true");
 
             long t1 = millisTime();
             try {
                 client.prepareGet(getTargetUrl()).setHeaders(h).setUrl(getTargetUrl()).execute().get();
-                fail();
             } catch (Throwable ex) {
                 final long elapsedTime = millisTime() - t1;
-                System.out.println("EXPIRED: " + (elapsedTime));
-                assertNotNull(ex.getCause());
+                logger.debug("EXPIRED: " + (elapsedTime));
                 assertTrue(elapsedTime >= 10000 && elapsedTime <= 25000);
+                throw ex.getCause();
             }
         }
     }
@@ -1325,30 +1284,26 @@ public class BasicHttpTest extends AbstractBasicTest {
     public void asyncDoPostCancelTest() throws Exception {
         try (AsyncHttpClient client = asyncHttpClient()) {
             HttpHeaders h = new DefaultHttpHeaders();
-            h.add(HttpHeaders.Names.CONTENT_TYPE, HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED);
+            h.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED);
             h.add("LockThread", "true");
             StringBuilder sb = new StringBuilder();
             sb.append("LockThread=true");
 
             final AtomicReference<CancellationException> ex = new AtomicReference<>();
             ex.set(null);
-            try {
-                Future<Response> future = client.preparePost(getTargetUrl()).setHeaders(h).setBody(sb.toString()).execute(new AsyncCompletionHandlerAdapter() {
+            Future<Response> future = client.preparePost(getTargetUrl()).setHeaders(h).setBody(sb.toString()).execute(new AsyncCompletionHandlerAdapter() {
 
-                    @Override
-                    public void onThrowable(Throwable t) {
-                        if (t instanceof CancellationException) {
-                            ex.set((CancellationException) t);
-                        }
-                        t.printStackTrace();
+                @Override
+                public void onThrowable(Throwable t) {
+                    if (t instanceof CancellationException) {
+                        ex.set((CancellationException) t);
                     }
+                    logger.debug("Exception", t);
+                }
 
-                });
+            });
 
-                future.cancel(true);
-            } catch (IllegalStateException ise) {
-                fail();
-            }
+            future.cancel(true);
             assertNotNull(ex.get());
         }
     }

@@ -14,7 +14,6 @@
 package org.asynchttpclient.netty.request.body;
 
 import static org.asynchttpclient.util.Assertions.*;
-
 import static org.asynchttpclient.util.MiscUtils.closeSilently;
 
 import org.asynchttpclient.request.body.RandomAccessBody;
@@ -64,5 +63,27 @@ public class BodyFileRegion extends AbstractReferenceCounted implements FileRegi
     @Override
     protected void deallocate() {
         closeSilently(body);
+    }
+
+    @Override
+    public FileRegion retain() {
+        super.retain();
+        return this;
+    }
+
+    @Override
+    public FileRegion retain(int arg0) {
+        super.retain(arg0);
+        return this;
+    }
+
+    @Override
+    public FileRegion touch() {
+        return this;
+    }
+
+    @Override
+    public FileRegion touch(Object arg0) {
+        return this;
     }
 }

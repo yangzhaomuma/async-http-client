@@ -63,7 +63,7 @@ public final class NettyConnectListener<T> extends SimpleChannelFutureListener {
 
     private void writeRequest(Channel channel) {
 
-        LOGGER.debug("Using non-cached Channel {} for {} '{}'", channel, future.getNettyRequest().getHttpRequest().getMethod(), future.getNettyRequest().getHttpRequest().getUri());
+        LOGGER.debug("Using non-cached Channel {} for {} '{}'", channel, future.getNettyRequest().getHttpRequest().method(), future.getNettyRequest().getHttpRequest().uri());
 
         Channels.setAttribute(channel, future);
 

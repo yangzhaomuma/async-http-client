@@ -15,7 +15,7 @@ package org.asynchttpclient.handler.resumable;
 
 import static org.asynchttpclient.Dsl.get;
 import static org.testng.Assert.*;
-import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpHeaderNames;
 
 import org.asynchttpclient.Request;
 import org.testng.annotations.Test;
@@ -33,13 +33,13 @@ public class ResumableAsyncHandlerTest {
         Request request = get("http://test/url").build();
         Request newRequest = h.adjustRequestRange(request);
         assertEquals(newRequest.getUri(), request.getUri());
-        String rangeHeader = newRequest.getHeaders().get(HttpHeaders.Names.RANGE);
+        String rangeHeader = newRequest.getHeaders().get(HttpHeaderNames.RANGE);
         assertNull(rangeHeader);
 
         proc.put("http://test/url", 5000);
         newRequest = h.adjustRequestRange(request);
         assertEquals(newRequest.getUri(), request.getUri());
-        rangeHeader = newRequest.getHeaders().get(HttpHeaders.Names.RANGE);
+        rangeHeader = newRequest.getHeaders().get(HttpHeaderNames.RANGE);
         assertEquals(rangeHeader, "bytes=5000-");
     }
 }

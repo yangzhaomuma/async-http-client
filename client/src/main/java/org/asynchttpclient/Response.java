@@ -16,10 +16,6 @@
  */
 package org.asynchttpclient;
 
-import org.asynchttpclient.cookie.Cookie;
-import org.asynchttpclient.netty.NettyResponse;
-import org.asynchttpclient.uri.Uri;
-
 import io.netty.handler.codec.http.HttpHeaders;
 
 import java.io.InputStream;
@@ -28,6 +24,10 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.asynchttpclient.cookie.Cookie;
+import org.asynchttpclient.netty.NettyResponse;
+import org.asynchttpclient.uri.Uri;
 
 /**
  * Represents the asynchronous HTTP response callback for an {@link AsyncCompletionHandler}
@@ -101,7 +101,7 @@ public interface Response {
      * @param name the header name
      * @return the first response header value
      */
-    String getHeader(String name);
+    String getHeader(CharSequence name);
 
     /**
      * Return a {@link List} of the response header value.
@@ -109,7 +109,7 @@ public interface Response {
      * @param name the header name
      * @return the response header value
      */
-    List<String> getHeaders(String name);
+    List<String> getHeaders(CharSequence name);
 
     HttpHeaders getHeaders();
 

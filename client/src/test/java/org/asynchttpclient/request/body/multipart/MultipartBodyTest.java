@@ -16,7 +16,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.testng.Assert.*;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.EmptyHttpHeaders;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +37,6 @@ public class MultipartBodyTest {
 
         // add a file
         final File testFile = getTestfile();
-        System.err.println(testFile.length());
         parts.add(new FilePart("filePart", testFile));
 
         // add a byte array
@@ -59,7 +58,7 @@ public class MultipartBodyTest {
     private static void compareContentLength(final List<Part> parts) throws IOException {
         assertNotNull(parts);
         // get expected values
-        final MultipartBody multipartBody = MultipartUtils.newMultipartBody(parts, HttpHeaders.EMPTY_HEADERS);
+        final MultipartBody multipartBody = MultipartUtils.newMultipartBody(parts, EmptyHttpHeaders.INSTANCE);
         final long expectedContentLength = multipartBody.getContentLength();
         try {
             final ByteBuf buffer = Unpooled.buffer(8192);

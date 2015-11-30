@@ -102,8 +102,7 @@ public class RetryNonBlockingIssue extends AbstractBasicTest {
                 b.append(heads + "\r\n");
                 b.append("==============\r\n");
             }
-            System.out.println(b.toString());
-            System.out.flush();
+            logger.debug(b.toString());
         }
     }
 
@@ -133,8 +132,7 @@ public class RetryNonBlockingIssue extends AbstractBasicTest {
                 b.append(heads + "\r\n");
                 b.append("==============\r\n");
             }
-            System.out.println(b.toString());
-            System.out.flush();
+            logger.debug(b.toString());
         }
     }
 
@@ -153,7 +151,7 @@ public class RetryNonBlockingIssue extends AbstractBasicTest {
                 requests.put(id, 1);
                 val = 1;
             }
-            System.out.println("REQUESTS: " + requests);
+            logger.debug("REQUESTS: " + requests);
             return val;
         }
 

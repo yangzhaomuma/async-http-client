@@ -18,6 +18,7 @@ package org.asynchttpclient;
 import static org.asynchttpclient.util.HttpUtils.*;
 import static org.asynchttpclient.util.MiscUtils.isNonEmpty;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 
 import java.io.File;
@@ -167,7 +168,7 @@ public abstract class RequestBuilderBase<T extends RequestBuilderBase<T>> {
         return asDerivedType();
     }
 
-    public T setHeader(CharSequence name, String value) {
+    public T setHeader(CharSequence name, CharSequence value) {
         this.headers.set(name, value);
         return asDerivedType();
     }
@@ -486,7 +487,7 @@ public abstract class RequestBuilderBase<T extends RequestBuilderBase<T>> {
     private Charset computeCharset() {
         if (this.charset == null) {
             try {
-                final String contentType = this.headers.get(HttpHeaders.Names.CONTENT_TYPE);
+                final String contentType = this.headers.get(HttpHeaderNames.CONTENT_TYPE);
                 if (contentType != null) {
                     final Charset charset = parseCharset(contentType);
                     if (charset != null) {
@@ -507,7 +508,7 @@ public abstract class RequestBuilderBase<T extends RequestBuilderBase<T>> {
     private long computeRequestContentLength() {
         if (this.contentLength < 0 && this.streamData == null) {
             // can't concatenate content-length
-            final String contentLength = this.headers.get(HttpHeaders.Names.CONTENT_LENGTH);
+            final String contentLength = this.headers.get(HttpHeaderNames.CONTENT_LENGTH);
 
             if (contentLength != null) {
                 try {

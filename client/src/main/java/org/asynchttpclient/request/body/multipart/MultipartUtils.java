@@ -16,6 +16,7 @@ package org.asynchttpclient.request.body.multipart;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static org.asynchttpclient.util.Assertions.assertNotNull;
 import static org.asynchttpclient.util.MiscUtils.isNonEmpty;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 
 import java.util.ArrayList;
@@ -53,7 +54,7 @@ public class MultipartUtils {
         byte[] boundary;
         String contentType;
 
-        String contentTypeHeader = requestHeaders.get(HttpHeaders.Names.CONTENT_TYPE);
+        String contentTypeHeader = requestHeaders.get(HttpHeaderNames.CONTENT_TYPE);
         if (isNonEmpty(contentTypeHeader)) {
             int boundaryLocation = contentTypeHeader.indexOf("boundary=");
             if (boundaryLocation != -1) {

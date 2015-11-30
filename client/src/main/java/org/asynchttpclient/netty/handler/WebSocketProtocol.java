@@ -17,7 +17,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.SWITCHING_PROTOCOLS
 import static org.asynchttpclient.ws.WebSocketUtils.getAcceptKey;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
-import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
@@ -27,7 +28,6 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 
 import java.io.IOException;
-import java.util.Locale;
 
 import org.asynchttpclient.AsyncHandler.State;
 import org.asynchttpclient.AsyncHttpClientConfig;
@@ -90,15 +90,15 @@ public final class WebSocketProtocol extends Protocol {
                 return;
             }
 
-            if (REDIRECT_STATUSES.contains(status.getStatusCode()) && exitAfterHandlingRedirect(channel, future, response, request, response.getStatus().code(), realm))
+            if (REDIRECT_STATUSES.contains(status.getStatusCode()) && exitAfterHandlingRedirect(channel, future, response, request, response.status().code(), realm))
                 return;
 
-            boolean validStatus = response.getStatus().equals(SWITCHING_PROTOCOLS);
-            boolean validUpgrade = response.headers().get(HttpHeaders.Names.UPGRADE) != null;
-            String connection = response.headers().get(HttpHeaders.Names.CONNECTION);
+            boolean validStatus = response.status().equals(SWITCHING_PROTOCOLS);
+            boolean validUpgrade = response.headers().get(HttpHeaderNames.UPGRADE) != null;
+            String connection = response.headers().get(HttpHeaderNames.CONNECTION);
             if (connection == null)
-                connection = response.headers().get(HttpHeaders.Names.CONNECTION.toLowerCase(Locale.ENGLISH));
-            boolean validConnection = HttpHeaders.Values.UPGRADE.equalsIgnoreCase(connection);
+                connection = response.headers().get(HttpHeaderNames.CONNECTION);
+            boolean validConnection = HttpHeaderValues.UPGRADE.contentEqualsIgnoreCase(connection);
             boolean statusReceived = handler.onStatusReceived(status) == State.UPGRADE;
 
             if (!statusReceived) {
@@ -116,8 +116,8 @@ public final class WebSocketProtocol extends Protocol {
                 return;
             }
 
-            String accept = response.headers().get(HttpHeaders.Names.SEC_WEBSOCKET_ACCEPT);
-            String key = getAcceptKey(future.getNettyRequest().getHttpRequest().headers().get(HttpHeaders.Names.SEC_WEBSOCKET_KEY));
+            String accept = response.headers().get(HttpHeaderNames.SEC_WEBSOCKET_ACCEPT);
+            String key = getAcceptKey(future.getNettyRequest().getHttpRequest().headers().get(HttpHeaderNames.SEC_WEBSOCKET_KEY));
             if (accept == null || !accept.equals(key)) {
                 requestSender.abort(channel, future, new IOException(String.format("Invalid challenge. Actual: %s. Expected: %s", accept, key)));
             }

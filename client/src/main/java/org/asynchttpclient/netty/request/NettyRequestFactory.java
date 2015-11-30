@@ -13,29 +13,15 @@
  */
 package org.asynchttpclient.netty.request;
 
-import static io.netty.handler.codec.http.HttpHeaders.Names.ACCEPT;
-import static io.netty.handler.codec.http.HttpHeaders.Names.ACCEPT_ENCODING;
-import static io.netty.handler.codec.http.HttpHeaders.Names.AUTHORIZATION;
-import static io.netty.handler.codec.http.HttpHeaders.Names.CONNECTION;
-import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_LENGTH;
-import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
-import static io.netty.handler.codec.http.HttpHeaders.Names.COOKIE;
-import static io.netty.handler.codec.http.HttpHeaders.Names.HOST;
-import static io.netty.handler.codec.http.HttpHeaders.Names.ORIGIN;
-import static io.netty.handler.codec.http.HttpHeaders.Names.PROXY_AUTHORIZATION;
-import static io.netty.handler.codec.http.HttpHeaders.Names.SEC_WEBSOCKET_KEY;
-import static io.netty.handler.codec.http.HttpHeaders.Names.SEC_WEBSOCKET_VERSION;
-import static io.netty.handler.codec.http.HttpHeaders.Names.TRANSFER_ENCODING;
-import static io.netty.handler.codec.http.HttpHeaders.Names.UPGRADE;
-import static io.netty.handler.codec.http.HttpHeaders.Names.USER_AGENT;
+import static io.netty.handler.codec.http.HttpHeaderNames.*;
+import static org.asynchttpclient.util.AuthenticatorUtils.*;
 import static org.asynchttpclient.util.HttpUtils.*;
-import static org.asynchttpclient.util.AuthenticatorUtils.perRequestAuthorizationHeader;
-import static org.asynchttpclient.util.AuthenticatorUtils.perRequestProxyAuthorizationHeader;
 import static org.asynchttpclient.util.MiscUtils.isNonEmpty;
 import static org.asynchttpclient.ws.WebSocketUtils.getKey;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.DefaultHttpRequest;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
@@ -66,7 +52,7 @@ import org.asynchttpclient.util.StringUtils;
 
 public final class NettyRequestFactory {
 
-    public static final String GZIP_DEFLATE = HttpHeaders.Values.GZIP + "," + HttpHeaders.Values.DEFLATE;
+    public static final String GZIP_DEFLATE = HttpHeaderValues.GZIP + "," + HttpHeaderValues.DEFLATE;
     
     private final AsyncHttpClientConfig config;
 
@@ -97,9 +83,9 @@ public final class NettyRequestFactory {
 
             else if (isNonEmpty(request.getFormParams())) {
 
-                String contentType = null;
+                CharSequence contentType = null;
                 if (!request.getHeaders().contains(CONTENT_TYPE))
-                    contentType = HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED;
+                    contentType = HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED;
 
                 nettyBody = new NettyByteBufferBody(urlEncodeFormParams(request.getFormParams(), bodyCharset), contentType);
 
@@ -184,7 +170,7 @@ public final class NettyRequestFactory {
 
         if (body != null) {
             if (body.getContentLength() < 0)
-                headers.set(TRANSFER_ENCODING, HttpHeaders.Values.CHUNKED);
+                headers.set(TRANSFER_ENCODING, HttpHeaderValues.CHUNKED);
             else
                 headers.set(CONTENT_LENGTH, body.getContentLength());
 
@@ -194,14 +180,14 @@ public final class NettyRequestFactory {
 
         // connection header and friends
         if (!connect && uri.isWebSocket()) {
-            headers.set(UPGRADE, HttpHeaders.Values.WEBSOCKET)//
-                    .set(CONNECTION, HttpHeaders.Values.UPGRADE)//
+            headers.set(UPGRADE, HttpHeaderValues.WEBSOCKET)//
+                    .set(CONNECTION, HttpHeaderValues.UPGRADE)//
                     .set(ORIGIN, "http://" + uri.getHost() + ":" + uri.getExplicitPort())//
                     .set(SEC_WEBSOCKET_KEY, getKey())//
                     .set(SEC_WEBSOCKET_VERSION, "13");
 
         } else if (!headers.contains(CONNECTION)) {
-            String connectionHeaderValue = connectionHeader(allowConnectionPooling, httpVersion);
+            CharSequence connectionHeaderValue = connectionHeader(allowConnectionPooling, httpVersion);
             if (connectionHeaderValue != null)
                 headers.set(CONNECTION, connectionHeaderValue);
         }
@@ -243,12 +229,12 @@ public final class NettyRequestFactory {
         }
     }
 
-    private String connectionHeader(boolean allowConnectionPooling, HttpVersion httpVersion) {
+    private CharSequence connectionHeader(boolean allowConnectionPooling, HttpVersion httpVersion) {
         
         if (httpVersion.isKeepAliveDefault()) {
-            return allowConnectionPooling ? null : HttpHeaders.Values.CLOSE;
+            return allowConnectionPooling ? null : HttpHeaderValues.CLOSE;
         } else {
-            return allowConnectionPooling ? HttpHeaders.Values.KEEP_ALIVE : null;
+            return allowConnectionPooling ? HttpHeaderValues.KEEP_ALIVE : null;
         }
     }
 }

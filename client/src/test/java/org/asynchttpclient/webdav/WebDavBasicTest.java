@@ -153,8 +153,7 @@ public class WebDavBasicTest extends AbstractBasicTest {
                  */
                 @Override
                 public void onThrowable(Throwable t) {
-
-                    t.printStackTrace();
+                    logger.error("Webdav error", t);
                 }
 
                 @Override

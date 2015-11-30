@@ -18,6 +18,7 @@ package org.asynchttpclient;
 import static org.asynchttpclient.Dsl.*;
 import static org.asynchttpclient.test.TestUtils.*;
 import static org.testng.Assert.*;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 
 import java.util.Arrays;
@@ -67,7 +68,7 @@ public class AsyncStreamHandlerTest extends AbstractBasicTest {
             
             HttpHeaders h = responseHeaders.get();
             assertNotNull(h, "No response headers");
-            assertContentTypesEquals(h.get(HttpHeaders.Names.CONTENT_TYPE), TEXT_HTML_CONTENT_TYPE_WITH_UTF_8_CHARSET);
+            assertContentTypesEquals(h.get(HttpHeaderNames.CONTENT_TYPE), TEXT_HTML_CONTENT_TYPE_WITH_UTF_8_CHARSET);
             assertNull(throwable.get(), "Unexpected exception");
         }
     }
@@ -105,7 +106,7 @@ public class AsyncStreamHandlerTest extends AbstractBasicTest {
             String responseBody = f.get(10, TimeUnit.SECONDS);
             HttpHeaders h = responseHeaders.get();
             assertNotNull(h);
-            assertContentTypesEquals(h.get(HttpHeaders.Names.CONTENT_TYPE), TEXT_HTML_CONTENT_TYPE_WITH_UTF_8_CHARSET);
+            assertContentTypesEquals(h.get(HttpHeaderNames.CONTENT_TYPE), TEXT_HTML_CONTENT_TYPE_WITH_UTF_8_CHARSET);
             assertEquals(responseBody, RESPONSE);
         }
     }
@@ -146,7 +147,7 @@ public class AsyncStreamHandlerTest extends AbstractBasicTest {
             assertTrue(!bodyReceived.get(), "Interrupted not working");
             HttpHeaders h = responseHeaders.get();
             assertNotNull(h, "Should receive non null headers");
-            assertContentTypesEquals(h.get(HttpHeaders.Names.CONTENT_TYPE), TEXT_HTML_CONTENT_TYPE_WITH_UTF_8_CHARSET);
+            assertContentTypesEquals(h.get(HttpHeaderNames.CONTENT_TYPE), TEXT_HTML_CONTENT_TYPE_WITH_UTF_8_CHARSET);
             assertNull(throwable.get(), "Should get an exception");
         }
     }
@@ -185,7 +186,7 @@ public class AsyncStreamHandlerTest extends AbstractBasicTest {
             String responseBody = f.get(5, TimeUnit.SECONDS);
             HttpHeaders h = responseHeaders.get();
             assertNotNull(h, "Should receive non null headers");
-            assertContentTypesEquals(h.get(HttpHeaders.Names.CONTENT_TYPE), TEXT_HTML_CONTENT_TYPE_WITH_UTF_8_CHARSET);
+            assertContentTypesEquals(h.get(HttpHeaderNames.CONTENT_TYPE), TEXT_HTML_CONTENT_TYPE_WITH_UTF_8_CHARSET);
             assertNotNull(responseBody, "No response body");
             assertEquals(responseBody.trim(), RESPONSE, "Unexpected response body");
             assertNull(throwable.get(), "Unexpected exception");
@@ -255,7 +256,7 @@ public class AsyncStreamHandlerTest extends AbstractBasicTest {
             String r = f.get(5, TimeUnit.SECONDS);
             HttpHeaders h = responseHeaders.get();
             assertNotNull(h, "Should receive non null headers");
-            assertContentTypesEquals(h.get(HttpHeaders.Names.CONTENT_TYPE), TEXT_HTML_CONTENT_TYPE_WITH_UTF_8_CHARSET);
+            assertContentTypesEquals(h.get(HttpHeaderNames.CONTENT_TYPE), TEXT_HTML_CONTENT_TYPE_WITH_UTF_8_CHARSET);
             assertNotNull(r, "No response body");
             assertEquals(r.trim(), RESPONSE, "Unexpected response body");
             
@@ -286,7 +287,7 @@ public class AsyncStreamHandlerTest extends AbstractBasicTest {
             f.get(5, TimeUnit.SECONDS);
             h = responseHeaders.get();
             assertNotNull(h, "Should receive non null headers");
-            assertContentTypesEquals(h.get(HttpHeaders.Names.CONTENT_TYPE), TEXT_HTML_CONTENT_TYPE_WITH_UTF_8_CHARSET);
+            assertContentTypesEquals(h.get(HttpHeaderNames.CONTENT_TYPE), TEXT_HTML_CONTENT_TYPE_WITH_UTF_8_CHARSET);
             assertNotNull(r, "No response body");
             assertEquals(r.trim(), RESPONSE, "Unexpected response body");
         }
@@ -328,7 +329,7 @@ public class AsyncStreamHandlerTest extends AbstractBasicTest {
             // Google site, that uses ISO-8892-2 encoding (default for HU). Similar is true for other
             // non-ISO-8859-1 using countries that have "localized" google, like google.hr, google.rs, google.cz, google.sk etc.
             //
-            // assertEquals(h.get(HttpHeaders.Names.CONTENT_TYPE), "text/html; charset=ISO-8859-1");
+            // assertEquals(h.get(HttpHeaderNames.CONTENT_TYPE), "text/html; charset=ISO-8859-1");
         }
     }
 
@@ -421,7 +422,7 @@ public class AsyncStreamHandlerTest extends AbstractBasicTest {
             f.get(20, TimeUnit.SECONDS) ;
             HttpHeaders h = responseHeaders.get();
             assertNotNull(h);
-            String[] values = h.get(HttpHeaders.Names.ALLOW).split(",|, ");
+            String[] values = h.get(HttpHeaderNames.ALLOW).split(",|, ");
             assertNotNull(values);
             assertEquals(values.length, expected.length);
             Arrays.sort(values);

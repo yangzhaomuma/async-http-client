@@ -14,17 +14,19 @@
 package org.asynchttpclient.netty.handler;
 
 import static org.asynchttpclient.Dsl.realm;
-import static org.asynchttpclient.util.HttpConstants.ResponseStatusCodes.*;
 import static org.asynchttpclient.util.AuthenticatorUtils.getHeaderWithPrefix;
-import static org.asynchttpclient.util.HttpConstants.Methods.*;
+import static org.asynchttpclient.util.HttpConstants.Methods.CONNECT;
+import static org.asynchttpclient.util.HttpConstants.ResponseStatusCodes.*;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.LastHttpContent;
 
 import java.io.IOException;
@@ -69,7 +71,7 @@ public final class HttpProtocol extends Protocol {
         Uri uri = request.getUri();
         String host = request.getVirtualHost() == null ? uri.getHost() : request.getVirtualHost();
         String challengeHeader = SpnegoEngine.instance().generateToken(host);
-        headers.set(HttpHeaders.Names.AUTHORIZATION, "Negotiate " + challengeHeader);
+        headers.set(HttpHeaderNames.AUTHORIZATION, "Negotiate " + challengeHeader);
     }
 
     private void kerberosProxyChallenge(Channel channel,//
@@ -81,7 +83,7 @@ public final class HttpProtocol extends Protocol {
             NettyResponseFuture<?> future) throws SpnegoEngineException {
 
         String challengeHeader = SpnegoEngine.instance().generateToken(proxyServer.getHost());
-        headers.set(HttpHeaders.Names.PROXY_AUTHORIZATION, "Negotiate " + challengeHeader);
+        headers.set(HttpHeaderNames.PROXY_AUTHORIZATION, "Negotiate " + challengeHeader);
     }
 
     private void ntlmChallenge(String authenticateHeader,//
@@ -95,7 +97,7 @@ public final class HttpProtocol extends Protocol {
             String challengeHeader = NtlmEngine.INSTANCE.generateType1Msg();
             // FIXME we might want to filter current NTLM and add (leave other
             // Authorization headers untouched)
-            headers.set(HttpHeaders.Names.AUTHORIZATION, "NTLM " + challengeHeader);
+            headers.set(HttpHeaderNames.AUTHORIZATION, "NTLM " + challengeHeader);
             future.getInAuth().set(false);
 
         } else {
@@ -103,7 +105,7 @@ public final class HttpProtocol extends Protocol {
             String challengeHeader = NtlmEngine.INSTANCE.generateType3Msg(realm.getPrincipal(), realm.getPassword(), realm.getNtlmDomain(), realm.getNtlmHost(), serverChallenge);
             // FIXME we might want to filter current NTLM and add (leave other
             // Authorization headers untouched)
-            headers.set(HttpHeaders.Names.AUTHORIZATION, "NTLM " + challengeHeader);
+            headers.set(HttpHeaderNames.AUTHORIZATION, "NTLM " + challengeHeader);
         }
     }
 
@@ -118,7 +120,7 @@ public final class HttpProtocol extends Protocol {
             String challengeHeader = NtlmEngine.INSTANCE.generateType1Msg();
             // FIXME we might want to filter current NTLM and add (leave other
             // Authorization headers untouched)
-            headers.set(HttpHeaders.Names.PROXY_AUTHORIZATION, "NTLM " + challengeHeader);
+            headers.set(HttpHeaderNames.PROXY_AUTHORIZATION, "NTLM " + challengeHeader);
             future.getInProxyAuth().set(false);
 
         } else {
@@ -127,7 +129,7 @@ public final class HttpProtocol extends Protocol {
                     proxyRealm.getNtlmHost(), serverChallenge);
             // FIXME we might want to filter current NTLM and add (leave other
             // Authorization headers untouched)
-            headers.set(HttpHeaders.Names.PROXY_AUTHORIZATION, "NTLM " + challengeHeader);
+            headers.set(HttpHeaderNames.PROXY_AUTHORIZATION, "NTLM " + challengeHeader);
         }
     }
 
@@ -190,7 +192,7 @@ public final class HttpProtocol extends Protocol {
             return false;
         }
 
-        List<String> wwwAuthHeaders = response.headers().getAll(HttpHeaders.Names.WWW_AUTHENTICATE);
+        List<String> wwwAuthHeaders = response.headers().getAll(HttpHeaderNames.WWW_AUTHENTICATE);
 
         if (wwwAuthHeaders.isEmpty()) {
             logger.info("Can't handle 401 as response doesn't contain WWW-Authenticate headers");
@@ -287,7 +289,7 @@ public final class HttpProtocol extends Protocol {
         final Request nextRequest = new RequestBuilder(future.getCurrentRequest()).setHeaders(requestHeaders).build();
 
         logger.debug("Sending authentication to {}", request.getUri());
-        if (future.isKeepAlive() && !HttpHeaders.isTransferEncodingChunked(httpRequest) && !HttpHeaders.isTransferEncodingChunked(response)) {
+        if (future.isKeepAlive() && !HttpUtil.isTransferEncodingChunked(httpRequest) && !HttpUtil.isTransferEncodingChunked(response)) {
             future.setReuseChannel(true);
             requestSender.drainChannelAndExecuteNextRequest(channel, future, nextRequest);
         } else {
@@ -319,7 +321,7 @@ public final class HttpProtocol extends Protocol {
             return false;
         }
 
-        List<String> proxyAuthHeaders = response.headers().getAll(HttpHeaders.Names.PROXY_AUTHENTICATE);
+        List<String> proxyAuthHeaders = response.headers().getAll(HttpHeaderNames.PROXY_AUTHENTICATE);
 
         if (proxyAuthHeaders.isEmpty()) {
             logger.info("Can't handle 407 as response doesn't contain Proxy-Authenticate headers");
@@ -419,7 +421,7 @@ public final class HttpProtocol extends Protocol {
         final Request nextRequest = nextRequestBuilder.build();
 
         logger.debug("Sending proxy authentication to {}", request.getUri());
-        if (future.isKeepAlive() && !HttpHeaders.isTransferEncodingChunked(httpRequest) && !HttpHeaders.isTransferEncodingChunked(response)) {
+        if (future.isKeepAlive() && !HttpUtil.isTransferEncodingChunked(httpRequest) && !HttpUtil.isTransferEncodingChunked(response)) {
             future.setConnectAllowed(true);
             future.setReuseChannel(true);
             requestSender.drainChannelAndExecuteNextRequest(channel, future, nextRequest);
@@ -461,7 +463,7 @@ public final class HttpProtocol extends Protocol {
                 exitAfterHandlingReactiveStreams(channel, future, response, handler, httpRequest);
 
         if (exit)
-            finishUpdate(future, channel, HttpHeaders.isTransferEncodingChunked(httpRequest) || HttpHeaders.isTransferEncodingChunked(response));
+            finishUpdate(future, channel, HttpUtil.isTransferEncodingChunked(httpRequest) || HttpUtil.isTransferEncodingChunked(response));
 
         return exit;
     }
@@ -494,7 +496,7 @@ public final class HttpProtocol extends Protocol {
 
         HttpRequest httpRequest = future.getNettyRequest().getHttpRequest();
         ProxyServer proxyServer = future.getProxyServer();
-        int statusCode = response.getStatus().code();
+        int statusCode = response.status().code();
         Request request = future.getCurrentRequest();
         Realm realm = request.getRealm() != null ? request.getRealm() : config.getRealm();
 
@@ -510,7 +512,7 @@ public final class HttpProtocol extends Protocol {
         } else if (REDIRECT_STATUSES.contains(statusCode)) {
             return exitAfterHandlingRedirect(channel, future, response, request, statusCode, realm);
 
-        } else if (httpRequest.getMethod() == HttpMethod.CONNECT && statusCode == OK_200) {
+        } else if (httpRequest.method() == HttpMethod.CONNECT && statusCode == OK_200) {
             return exitAfterHandlingConnect(channel, future, request, proxyServer, statusCode, httpRequest);
 
         }

@@ -15,6 +15,7 @@ package org.asynchttpclient;
 import static org.asynchttpclient.Dsl.*;
 import static org.asynchttpclient.test.TestUtils.*;
 import static org.testng.Assert.*;
+import io.netty.handler.codec.http.HttpHeaderNames;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
@@ -47,7 +48,7 @@ public class DigestAuthTest extends AbstractBasicTest {
     private static class SimpleHandler extends AbstractHandler {
         public void handle(String s, Request r, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
-            response.addHeader("X-Auth", request.getHeader("Authorization"));
+            response.addHeader("X-Auth", request.getHeader(HttpHeaderNames.AUTHORIZATION.toString()));
             response.setStatus(200);
             response.getOutputStream().flush();
             response.getOutputStream().close();

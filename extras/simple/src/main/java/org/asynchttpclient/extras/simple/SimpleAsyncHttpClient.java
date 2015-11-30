@@ -14,6 +14,7 @@ package org.asynchttpclient.extras.simple;
 
 import static org.asynchttpclient.Dsl.*;
 import static org.asynchttpclient.util.MiscUtils.closeSilently;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.ssl.SslContext;
 
@@ -798,7 +799,7 @@ public class SimpleAsyncHttpClient implements Closeable {
         }
 
         private void calculateTotal(HttpResponseHeaders headers) {
-            String length = headers.getHeaders().get(HttpHeaders.Names.CONTENT_LENGTH);
+            String length = headers.getHeaders().get(HttpHeaderNames.CONTENT_LENGTH);
 
             try {
                 total = Integer.valueOf(length);

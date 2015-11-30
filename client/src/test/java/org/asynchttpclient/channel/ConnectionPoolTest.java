@@ -100,7 +100,7 @@ public class ConnectionPoolTest extends AbstractBasicTest {
 
                 @Override
                 public Response onCompleted(Response response) throws Exception {
-                    System.out.println("ON COMPLETED INVOKED " + response.getHeader("X-KEEP-ALIVE"));
+                    logger.debug("ON COMPLETED INVOKED " + response.getHeader("X-KEEP-ALIVE"));
                     try {
                         assertEquals(response.getStatusCode(), 200);
                         remoteAddresses.put(response.getHeader("X-KEEP-ALIVE"), true);
@@ -140,7 +140,6 @@ public class ConnectionPoolTest extends AbstractBasicTest {
                 c.preparePost(String.format("http://localhost:%d/foo/test", port2)).setBody(body).execute().get(TIMEOUT, TimeUnit.SECONDS);
                 fail("Should throw exception. Too many connections issued.");
             } catch (Exception ex) {
-                ex.printStackTrace();
                 exception = ex;
             }
             assertNotNull(exception);
@@ -163,7 +162,6 @@ public class ConnectionPoolTest extends AbstractBasicTest {
             try {
                 response = c.preparePost(getTargetUrl()).setBody(body).execute().get(TIMEOUT, TimeUnit.SECONDS);
             } catch (Exception ex) {
-                ex.printStackTrace();
                 exception = ex;
             }
             assertNull(exception);
@@ -179,8 +177,8 @@ public class ConnectionPoolTest extends AbstractBasicTest {
      * 
      * @throws Exception if something wrong happens.
      */
-    @Test(groups = "standalone")
-    public void win7DisconnectTest() throws Exception {
+    @Test(groups = "standalone", expectedExceptions = IOException.class)
+    public void win7DisconnectTest() throws Throwable {
         final AtomicInteger count = new AtomicInteger(0);
 
         try (AsyncHttpClient client = asyncHttpClient()) {
@@ -202,9 +200,8 @@ public class ConnectionPoolTest extends AbstractBasicTest {
                 fail("Must have received an exception");
             } catch (ExecutionException ex) {
                 assertNotNull(ex);
-                assertNotNull(ex.getCause());
-                assertEquals(ex.getCause().getClass(), IOException.class);
                 assertEquals(count.get(), 1);
+                throw ex.getCause();
             }
         }
     }
@@ -238,7 +235,9 @@ public class ConnectionPoolTest extends AbstractBasicTest {
                     }
                 });
             }
-            latch.await(TIMEOUT, TimeUnit.SECONDS);
+            if (!latch.await(TIMEOUT, TimeUnit.SECONDS)) {
+                fail("Timed out");
+            }
             assertEquals(count.get(), 0);
         }
     }

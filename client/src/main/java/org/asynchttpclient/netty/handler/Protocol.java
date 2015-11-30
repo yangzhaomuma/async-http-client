@@ -13,14 +13,16 @@
  */
 package org.asynchttpclient.netty.handler;
 
-import static io.netty.handler.codec.http.HttpHeaders.Names.*;
+import static io.netty.handler.codec.http.HttpHeaderNames.*;
 import static org.asynchttpclient.util.Assertions.assertNotNull;
-import static org.asynchttpclient.util.HttpConstants.Methods.*;
+import static org.asynchttpclient.util.HttpConstants.Methods.GET;
 import static org.asynchttpclient.util.HttpConstants.ResponseStatusCodes.*;
 import static org.asynchttpclient.util.HttpUtils.*;
 import io.netty.channel.Channel;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpUtil;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -86,11 +88,11 @@ public abstract class Protocol {
     private HttpHeaders propagatedHeaders(Request request, Realm realm, boolean keepBody) {
 
         HttpHeaders headers = request.getHeaders()//
-                .remove(HttpHeaders.Names.HOST)//
-                .remove(HttpHeaders.Names.CONTENT_LENGTH);
+                .remove(HttpHeaderNames.HOST)//
+                .remove(HttpHeaderNames.CONTENT_LENGTH);
 
         if (!keepBody) {
-            headers.remove(HttpHeaders.Names.CONTENT_TYPE);
+            headers.remove(HttpHeaderNames.CONTENT_TYPE);
         }
 
         if (realm != null && realm.getScheme() == AuthScheme.NTLM) {
@@ -153,12 +155,12 @@ public abstract class Protocol {
                 final Object initialPartitionKey = future.getPartitionKey();
 
                 HttpHeaders responseHeaders = response.headers();
-                String location = responseHeaders.get(HttpHeaders.Names.LOCATION);
+                String location = responseHeaders.get(HttpHeaderNames.LOCATION);
                 Uri newUri = Uri.create(future.getUri(), location);
 
                 logger.debug("Redirecting to {}", newUri);
 
-                for (String cookieStr : responseHeaders.getAll(HttpHeaders.Names.SET_COOKIE)) {
+                for (String cookieStr : responseHeaders.getAll(HttpHeaderNames.SET_COOKIE)) {
                     Cookie c = CookieDecoder.decode(cookieStr);
                     if (c != null)
                         requestBuilder.addOrReplaceCookie(c);
@@ -176,7 +178,7 @@ public abstract class Protocol {
 
                 logger.debug("Sending redirect to {}", newUri);
 
-                if (future.isKeepAlive() && !HttpHeaders.isTransferEncodingChunked(response)) {
+                if (future.isKeepAlive() && !HttpUtil.isTransferEncodingChunked(response)) {
 
                     if (sameBase) {
                         future.setReuseChannel(true);

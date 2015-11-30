@@ -13,8 +13,8 @@
  */
 package org.asynchttpclient.channel;
 
-import static io.netty.handler.codec.http.HttpHeaders.Names.CONNECTION;
-import static io.netty.handler.codec.http.HttpHeaders.Values.*;
+import static io.netty.handler.codec.http.HttpHeaderNames.CONNECTION;
+import static io.netty.handler.codec.http.HttpHeaderValues.*;
 import io.netty.handler.codec.http.HttpMessage;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
@@ -34,7 +34,7 @@ public interface KeepAliveStrategy {
     boolean keepAlive(Request ahcRequest, HttpRequest nettyRequest, HttpResponse nettyResponse);
 
     /**
-     * Connection strategy implementing standard HTTP 1.0/1.1 behaviour.
+     * Connection strategy implementing standard HTTP 1.0/1.1 behavior.
      */
     enum DefaultKeepAliveStrategy implements KeepAliveStrategy {
         
@@ -49,18 +49,18 @@ public interface KeepAliveStrategy {
 
             String responseConnectionHeader = connectionHeader(response);
 
-            if (CLOSE.equalsIgnoreCase(responseConnectionHeader)) {
+            if (CLOSE.contentEqualsIgnoreCase(responseConnectionHeader)) {
                 return false;
             } else {
                 String requestConnectionHeader = connectionHeader(request);
 
-                if (request.getProtocolVersion() == HttpVersion.HTTP_1_0) {
+                if (request.protocolVersion() == HttpVersion.HTTP_1_0) {
                     // only use keep-alive if both parties agreed upon it
-                    return KEEP_ALIVE.equalsIgnoreCase(requestConnectionHeader) && KEEP_ALIVE.equalsIgnoreCase(responseConnectionHeader);
+                    return KEEP_ALIVE.contentEqualsIgnoreCase(requestConnectionHeader) && KEEP_ALIVE.contentEqualsIgnoreCase(responseConnectionHeader);
 
                 } else {
                     // 1.1+, keep-alive is default behavior
-                    return !CLOSE.equalsIgnoreCase(requestConnectionHeader);
+                    return !CLOSE.contentEqualsIgnoreCase(requestConnectionHeader);
                 }
             }
         }
