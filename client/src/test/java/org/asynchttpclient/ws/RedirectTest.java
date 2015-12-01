@@ -15,11 +15,11 @@ package org.asynchttpclient.ws;
 
 import static org.asynchttpclient.Dsl.*;
 import static org.asynchttpclient.test.TestUtils.*;
-import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.*;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -72,17 +72,17 @@ public class RedirectTest extends AbstractBasicTest {
     }
 
 
-    @Test(groups = "standalone", timeOut = 60000)
+    @Test(groups = "standalone")
     public void testRedirectToWSResource() throws Exception {
         try (AsyncHttpClient c = asyncHttpClient(config().setFollowRedirect(true))) {
             final CountDownLatch latch = new CountDownLatch(1);
-            final AtomicReference<String> text = new AtomicReference<>("");
+            final AtomicBoolean onOpenCalled = new AtomicBoolean();
 
             WebSocket websocket = c.prepareGet(getRedirectURL()).execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(new WebSocketListener() {
 
                 @Override
                 public void onOpen(WebSocket websocket) {
-                    text.set("OnOpen");
+                    onOpenCalled.set(true);
                     latch.countDown();
                 }
 
@@ -98,7 +98,7 @@ public class RedirectTest extends AbstractBasicTest {
             }).build()).get();
 
             latch.await();
-            assertEquals(text.get(), "OnOpen");
+            assertTrue(onOpenCalled.get());
             websocket.close();
         }
     }
