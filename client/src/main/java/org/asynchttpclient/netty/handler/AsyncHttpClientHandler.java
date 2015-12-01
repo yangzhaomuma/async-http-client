@@ -66,6 +66,8 @@ public class AsyncHttpClientHandler extends ChannelInboundHandlerAdapter {
         Channel channel = ctx.channel();
         Object attribute = Channels.getAttribute(channel);
 
+        LOGGER.debug("channelRead channel={}, attribute={} msg={}", channel, attribute, msg);
+
         try {
             if (attribute instanceof Callback) {
                 Callback ac = (Callback) attribute;

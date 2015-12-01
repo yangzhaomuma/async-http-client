@@ -238,6 +238,8 @@ public final class DefaultChannelPool implements ChannelPool {
         if (isClosed.get())
             return false;
 
+        LOGGER.debug("Offering channel {} to pool with key {}", channel, partitionKey);
+
         long now = millisTime();
 
         if (isTtlExpired(channel, now))
