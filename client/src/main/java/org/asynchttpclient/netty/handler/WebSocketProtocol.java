@@ -85,8 +85,6 @@ public final class WebSocketProtocol extends Protocol {
         
         @Override
         public void call() throws Exception {
-            
-
             boolean validStatus = response.status().equals(SWITCHING_PROTOCOLS);
             boolean validUpgrade = response.headers().get(HttpHeaderNames.UPGRADE) != null;
             String connection = response.headers().get(HttpHeaderNames.CONNECTION);
