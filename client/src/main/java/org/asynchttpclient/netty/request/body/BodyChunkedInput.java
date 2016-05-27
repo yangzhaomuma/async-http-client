@@ -15,6 +15,7 @@ package org.asynchttpclient.netty.request.body;
 
 import static org.asynchttpclient.util.Assertions.assertNotNull;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.stream.ChunkedInput;
 
@@ -30,24 +31,52 @@ public class BodyChunkedInput implements ChunkedInput<ByteBuf> {
     private final Body body;
     private final int chunkSize;
     private boolean endOfInput;
+    private final long length;
+    private long progress = 0L;
 
     public BodyChunkedInput(Body body) {
         this.body = assertNotNull(body, "body");
-        long contentLength = body.getContentLength();
-        if (contentLength <= 0)
+        this.length = body.getContentLength();
+        if (length <= 0)
             chunkSize = DEFAULT_CHUNK_SIZE;
         else
-            chunkSize = (int) Math.min(contentLength, (long) DEFAULT_CHUNK_SIZE);
+            chunkSize = (int) Math.min(length, (long) DEFAULT_CHUNK_SIZE);
     }
 
     @Override
+    @Deprecated
     public ByteBuf readChunk(ChannelHandlerContext ctx) throws Exception {
+        return readChunk(ctx.alloc());
+    }
 
+    @Override
+    public boolean isEndOfInput() throws Exception {
+        return endOfInput;
+    }
+
+    @Override
+    public void close() throws Exception {
+        body.close();
+    }
+
+    @Override
+    public long length() {
+        return length;
+    }
+
+    @Override
+    public long progress() {
+        return progress;
+    }
+
+    @Override
+    public ByteBuf readChunk(ByteBufAllocator alloc) throws Exception {
         if (endOfInput)
             return null;
 
-        ByteBuf buffer = ctx.alloc().buffer(chunkSize);
+        ByteBuf buffer = alloc.buffer(chunkSize);
         Body.BodyState state = body.transferTo(buffer);
+        progress += buffer.readableBytes();
         switch (state) {
         case STOP:
             endOfInput = true;
@@ -61,15 +90,5 @@ public class BodyChunkedInput implements ChunkedInput<ByteBuf> {
         default:
             throw new IllegalStateException("Unknown state: " + state);
         }
-    }
-
-    @Override
-    public boolean isEndOfInput() throws Exception {
-        return endOfInput;
-    }
-
-    @Override
-    public void close() throws Exception {
-        body.close();
     }
 }
